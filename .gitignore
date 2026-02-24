@@ -37,4 +37,4 @@ hf_cache/
 .cache/
 
 # Logs
-*.log
+*.logreports/error_analysis/
