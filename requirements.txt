@@ -1,0 +1,13 @@
+transformers==5.2.0
+datasets
+accelerate
+pandas
+pyarrow
+pyyaml
+scikit-learn
+tqdm
+rich
+sentencepiece
+safetensors
+joblib
+matplotlib
