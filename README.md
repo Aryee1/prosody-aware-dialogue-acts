@@ -1,23 +1,27 @@
-# Prosody-Aware Dialogue Act Modeling
-Multimodal dialogue act classification on the AMI Meeting Corpus using text, audio prosody, and wav2vec2 embeddings.
+# Prosody-Aware Dialogue Act Modeling (AMI)
 
-This repo builds an end-to-end, reproducible pipeline:
-- Build an utterance-level dataset from AMI manual annotations (dialogue acts + words)
-- Train a text baseline (DistilBERT)
-- Download Mix-Headset audio for a subset of meetings, extract prosody features, and train a prosody baseline
-- Compare unimodal vs multimodal fusion with an ablation table
-- Run a small error analysis script
+## Project Overview
+This project builds a reproducible, end-to-end pipeline for **dialogue act classification** in multiparty meetings. It combines:
+- **Text** (DistilBERT fine-tuning)
+- **Audio prosody** (energy, silence, speaking-rate proxy, pitch proxies) extracted from AMI Mix-Headset audio
+- **wav2vec2 utterance embeddings** (with and without PCA compression)
 
-No raw AMI audio/video is committed to the repo.
+The goal is not just a single score, but a clear **unimodal vs multimodal comparison**, with ablations and a short error analysis that explains where models struggle in real meeting dialogue.
+
+No raw AMI audio/video is committed to the repo. Only scripts, configs, and small "commit-safe" result files are tracked.
+
+---
 
 ## Dataset
-AMI Meeting Corpus.
-- Download page (manual annotations and signals): https://groups.inf.ed.ac.uk/ami/download/
+AMI Meeting Corpus resources:
+- Download page: https://groups.inf.ed.ac.uk/ami/download/
 - Dialogue act manual: https://groups.inf.ed.ac.uk/ami/corpus/Guidelines/dialogue_acts_manual_1.0.pdf
 - Mix-Headset audio mirror: https://groups.inf.ed.ac.uk/ami/AMICorpusMirror/amicorpus/HeadsetAudio/
 
+---
+
 ## Results (commit-safe)
-All numbers are stored in `reports/results_public/`.
+All reported numbers are stored in `reports/results_public/`.
 
 ### Full AMI (text-only baseline)
 | Setup | Accuracy | Macro F1 | Weighted F1 |
@@ -26,8 +30,8 @@ All numbers are stored in `reports/results_public/`.
 
 File: `reports/results_public/text_only_full/test_metrics.json`
 
-### Audio subset ablations (30 meetings with Mix-Headset audio)
-These comparisons are computed on the same subset: utterances with available audio segments.
+### Audio Subset Ablations (30 meetings with Mix-Headset audio)
+These comparisons are computed on the same subset: utterances that have extracted audio segments.
 
 | Model | Accuracy | Macro F1 | Weighted F1 |
 |---|---:|---:|---:|
@@ -44,29 +48,89 @@ Files:
 - `reports/results_public/ablation_mix30_w2v/ablation_table.md`
 - `reports/results_public/ablation_mix30_w2v_pca/ablation_table.md`
 
-## Repo layout
-- `configs/` configs for Windows and Colab
-- `scripts/` runnable entry points
-- `src/` shared utilities
-- `reports/results_public/` small, commit-safe results
+**Takeaways:**
+- Prosody improves Macro F1 over text-only (0.439 → 0.477).
+- Raw wav2vec embeddings can overfit; PCA compression improves stability.
 
-## How to reproduce on Colab (GPU)
-1) Set GPU: Runtime → Change runtime type → GPU
-2) Run these cells:
+---
+
+## Repo Layout
+```
+configs/       # configs for Windows and Colab
+scripts/       # runnable entry points
+src/           # shared utilities
+reports/
+  results_public/   # small, commit-safe metrics and tables
+```
+
+---
+
+## How to Reproduce on Colab (GPU)
+
+### 1) Setup
+In Colab: **Runtime → Change runtime type → GPU**
 
 ```bash
 !git clone https://github.com/Aryee1/prosody-aware-dialogue-acts.git
 %cd prosody-aware-dialogue-acts
 !pip -q install -r requirements.txt
 !nvidia-smi
+```
 
-## Error analysis (audio subset)
-A quick inspection of `reports/error_analysis/text_plus_prosody/` shows three common failure modes:
+### 2) Build utterances from AMI manual annotations
 
-- Very short utterances (one or two words) are often misclassified (e.g., single-word fragments). These usually need wider conversational context.
-- Frequent confusions between **ass** and **bck**, and between **inf** and **ass**, which is expected in meeting dialogue where many turns are brief acknowledgements or evaluative statements.
-- Some errors have low predicted confidence, suggesting the model is aware of ambiguity rather than confidently wrong.
+```bash
+!python scripts/download_ami_annotations.py --config configs/colab.yaml
+!python scripts/prepare_ami_subset.py --config configs/colab.yaml
+```
 
-Files:
+### 3) Train the text baseline
+
+```bash
+!python scripts/train_text_baseline.py --config configs/experiments/text_only.yaml
+```
+
+### 4) Download audio subset and run prosody pipeline
+
+```bash
+!python scripts/download_ami_mix_headset.py --config configs/colab.yaml --max_meetings 30
+!python scripts/extract_audio_prosody.py --config configs/colab.yaml --audio_dir data/raw/ami_audio_mix
+!python scripts/train_prosody_baseline.py --config configs/colab.yaml
+!python scripts/run_mix_ablation.py --config configs/colab.yaml
+```
+
+### 5) wav2vec2 utterance embeddings + ablations
+
+```bash
+!python scripts/extract_wav2vec_utterance.py --config configs/colab.yaml
+!python scripts/run_mix_ablation_w2v.py --config configs/colab.yaml
+!python scripts/run_mix_ablation_w2v_pca.py --config configs/colab.yaml --pca_dim 128
+```
+
+---
+
+## Error Analysis (audio subset)
+
+Generate a small error report (top confusions + misclassified examples):
+
+```bash
+!python scripts/error_analysis.py \
+  --config configs/colab.yaml \
+  --text_model_dir models/checkpoints/text_only_distilbert \
+  --mode text_plus_prosody \
+  --n 30
+```
+
+Outputs are written to:
 - `reports/error_analysis/text_plus_prosody/top_confusions.csv`
 - `reports/error_analysis/text_plus_prosody/misclassified_examples.csv`
+
+> Note: `reports/error_analysis/` is ignored by git (generated outputs).
+
+---
+
+## References
+- AMI Meeting Corpus (Carletta et al.)
+- DistilBERT (Sanh et al.)
+- wav2vec 2.0 (Baevski et al.)
+- AMI dialogue act annotation manual
