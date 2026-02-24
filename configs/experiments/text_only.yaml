@@ -1,0 +1,26 @@
+base_config: ../default.yaml
+
+experiment:
+  name: text_only_distilbert
+  seed: 1337
+
+text:
+  model_name: distilbert-base-uncased
+  max_length: 128
+  epochs: 2
+  train_batch_size: 16
+  eval_batch_size: 32
+  learning_rate: 2.0e-5
+  weight_decay: 0.01
+  warmup_ratio: 0.06
+  grad_accum_steps: 1
+  fp16_if_cuda: true
+
+  # set these if you want quicker first run, otherwise leave null
+  max_train_samples: null
+  max_val_samples: null
+  max_test_samples: null
+
+outputs:
+  run_dir: reports/results/text_only_distilbert
+  model_dir: models/checkpoints/text_only_distilbert

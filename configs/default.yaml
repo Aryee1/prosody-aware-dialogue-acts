@@ -1,0 +1,24 @@
+project:
+  seed: 1337
+
+paths:
+  ami:
+    # keep the zip path as-is
+    annotations_zip_url: "https://groups.inf.ed.ac.uk/ami/AMICorpusAnnotations/ami_public_manual_1.6.2.zip"
+    annotations_zip_path: "data/raw/ami/ami_public_manual_1.6.2.zip"
+
+    # IMPORTANT: your extracted folders are directly inside data/raw/ami/
+    annotations_dir: "data/raw/ami"
+    words_dir: "data/raw/ami/words"
+    dialogue_acts_dir: "data/raw/ami/dialogueActs"
+
+outputs:
+  utterances_parquet: "data/processed/ami_da_utterances.parquet"
+  utterances_csv: "data/processed/ami_da_utterances.csv"
+  splits_json: "data/processed/ami_splits.json"
+
+splits:
+  split_by: "meeting"
+  train_frac: 0.70
+  val_frac: 0.15
+  test_frac: 0.15

@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyd
+*.so
+*.egg-info/
+.venv/
+venv/
+
+# Conda
+.conda/
+conda-meta/
+
+# VS Code
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Data (never commit)
+data/raw/
+data/interim/
+data/processed/
+# If you later want to commit small metadata tables, remove data/processed/ from above
+# and instead ignore only the large ones.
+
+# Features + model artifacts (never commit)
+features/cache/
+models/checkpoints/
+models/artifacts/
+reports/results/
+reports/figures/
+
+# Hugging Face cache (sometimes ends up in home dir, but ignore if inside repo)
+hf_cache/
+.cache/
+
+# Logs
+*.log

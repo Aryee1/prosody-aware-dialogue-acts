@@ -1,0 +1,21 @@
+name: prosody-da
+channels:
+  - conda-forge
+dependencies:
+  - python=3.10
+  - pip
+  - numpy
+  - pandas
+  - pyarrow
+  - pyyaml
+  - scikit-learn
+  - tqdm
+  - rich
+  - matplotlib
+  - pip:
+      - torch
+      - torchaudio
+      - transformers
+      - sentencepiece
+      - safetensors
+      - joblib
