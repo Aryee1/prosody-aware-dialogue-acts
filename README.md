@@ -59,3 +59,14 @@ Files:
 %cd prosody-aware-dialogue-acts
 !pip -q install -r requirements.txt
 !nvidia-smi
+
+## Error analysis (audio subset)
+A quick inspection of `reports/error_analysis/text_plus_prosody/` shows three common failure modes:
+
+- Very short utterances (one or two words) are often misclassified (e.g., single-word fragments). These usually need wider conversational context.
+- Frequent confusions between **ass** and **bck**, and between **inf** and **ass**, which is expected in meeting dialogue where many turns are brief acknowledgements or evaluative statements.
+- Some errors have low predicted confidence, suggesting the model is aware of ambiguity rather than confidently wrong.
+
+Files:
+- `reports/error_analysis/text_plus_prosody/top_confusions.csv`
+- `reports/error_analysis/text_plus_prosody/misclassified_examples.csv`
